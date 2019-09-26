@@ -5,32 +5,17 @@
     :max-width="options.width"
     :style="{ zIndex: options.zIndex }"
     @keydown.esc="cancel"
+    transition="slide-x-transition"
     persistent
     class="d-flex"
   >
     <v-card>
       <v-toolbar dark :color="options.color" dense flat>
-        <v-toolbar-title class="white--text display-1"></v-toolbar-title>
+        <v-toolbar-title class="white--text title"></v-toolbar-title>
       </v-toolbar>
-      <v-card-text v-show="!!message" class="pa-4 text title"
-        >請問是{{ message }}嗎?</v-card-text
-      >
-      <v-card-actions class="pt-0 justify-space-between">
-        <!-- <v-spacer></v-spacer> -->
-        <v-btn color="secondary" @click="agree" class="headline yes">
-          YES
-          <v-progress-circular
-            :size="30"
-            :width="2"
-            color=""
-            indeterminate
-            class="circular ml-2"
-            >{{ progressValue }}
-          </v-progress-circular>
-        </v-btn>
-        <!-- <v-btn color="primary darken-1" text @click.native="agree">Yes</v-btn> -->
-        <v-btn color="secondary" @click.native="cancel">Cancel</v-btn>
-      </v-card-actions>
+      <v-card-text v-show="!!message" class="pa-4 text display-2">
+        {{ message }}
+      </v-card-text>
     </v-card>
   </v-dialog>
 </template>
@@ -79,32 +64,22 @@ export default {
   }),
   methods: {
     open (message, options) {
-      this.progressValue = 5
+      this.progressValue = 1
       this.dialog = true
       this.message = message
       this.options = Object.assign(this.options, options)
       this.interval = setInterval(() => {
         if (this.progressValue === 1) {
-          this.resolve(true)
+          this.resolve(message)
           this.dialog = false
           window.clearInterval(this.interval)
         }
         this.progressValue -= 1
-      }, 1000)
+      }, 500)
       return new Promise((resolve, reject) => {
         this.resolve = resolve
         this.reject = reject
       })
-    },
-    agree () {
-      this.resolve(true)
-      this.dialog = false
-      window.clearInterval(this.interval)
-    },
-    cancel () {
-      this.resolve(false)
-      this.dialog = false
-      window.clearInterval(this.interval)
     }
   }
 }
