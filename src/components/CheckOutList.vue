@@ -35,7 +35,7 @@
       </v-list-item>
       <v-list-item v-if="All() != 0">
         <v-list-item-title class="d-flex flex-row justify-space-between">
-          <v-btn color="light-blue lighten-1">結帳</v-btn>
+          <v-btn color="light-blue lighten-1" @click="$emit('checkOut')">結帳</v-btn>
           <v-btn color="error" @click="$emit('deleteAll')">刪除全部</v-btn>
         </v-list-item-title>
       </v-list-item>
@@ -70,7 +70,7 @@ export default {
 </script>
 <style scoped>
 .shopinglist {
-  max-height: 570px;
+  max-height: 500px;
   overflow-y: scroll;
 }
 .shopinglist::-webkit-scrollbar {

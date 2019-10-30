@@ -51,7 +51,6 @@
  */
 export default {
   data: () => ({
-    progressValue: null,
     dialog: false,
     resolve: null,
     reject: null,
@@ -64,18 +63,13 @@ export default {
   }),
   methods: {
     open (message, options) {
-      this.progressValue = 1
       this.dialog = true
       this.message = message
       this.options = Object.assign(this.options, options)
-      this.interval = setInterval(() => {
-        if (this.progressValue === 1) {
-          this.resolve(message)
-          this.dialog = false
-          window.clearInterval(this.interval)
-        }
-        this.progressValue -= 1
-      }, 500)
+      window.setTimeout(() => {
+        this.dialog = false
+        this.resolve(message)
+      }, 1000)
       return new Promise((resolve, reject) => {
         this.resolve = resolve
         this.reject = reject
