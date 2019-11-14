@@ -1,7 +1,8 @@
 <template>
   <div>
-    <!-- <v-btn @click="test()">test</v-btn>
-    <v-btn @click="test2(`麵包${goods.length + 1}`)">test2</v-btn> -->
+   <!--
+    <v-btn @click="test()">test</v-btn>
+    <v-btn @click="test2(`麵包${goods.length + 1}`)">test2</v-btn>
     <v-btn @click="AddExample('bg')">Background</v-btn>
     <v-text-field
       hint="label"
@@ -16,15 +17,17 @@
         {{ f }} has {{ features[f] }}
       </li>
     </ul>
-    <h2>Confidence of {{ feature_result }} is {{ feature_chance }} %</h2>
+    <h2>Confidence of {{ feature_result }} is {{ feature_chance }} %</h2> -->
     <v-row>
       <v-col :cols="1"></v-col>
       <v-col :cols="6">
         <div id="video"></div>
       </v-col>
       <v-col :cols="2"></v-col>
-      <v-col
-        ><CheckOutList
+      <v-col>
+        <v-btn @click="LoadfromObject()" class="ml-3">load</v-btn>
+        <v-divider></v-divider>
+        <CheckOutList
           :goods="goods"
           @deleteAll="clear"
           @deleteItem="DeleteItem"
@@ -154,12 +157,16 @@ export default {
       if (ans.label == 'bg') {
         console.log(ans.label)
         window.setTimeout(() => { this.Classify() }, 500)
-      }
-      else {
+      } else {
         this.$refs.breadConfirmDialog.open(ans.label)
           .then((m) => { this.test2(m) })
           .then(() => { window.setTimeout(() => { this.Classify() }, 2000) })
       }
+    },
+    LoadfromObject () {
+      const data = JSON.parse(window.localStorage.getItem('save'))
+      classifier.load(data)
+        .then((msg) => { alert('success') })
     }
   }
 }
