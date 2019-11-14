@@ -11,13 +11,24 @@
       <v-col>
         <div class="list">
           <v-card>
-            <v-btn @click="AddExample('bg')">Background</v-btn>
+            <v-btn @click="Bg()">Background</v-btn>
             <v-text-field
               hint="label"
+              prepend-inner-icon="mdi-baguette"
               v-model="label"
               style="width:125px"
               :counter="15"
             ></v-text-field>
+            <div class="line">
+              <v-text-field
+                hint="money"
+                prepend-inner-icon="mdi-currency-usd"
+                v-model="money"
+                style="width:125px"
+                :counter="15"
+              ></v-text-field>
+            </div>
+
             <v-btn @click="AddExample(label)" class="mr-3">add</v-btn>
             <v-btn @click="Classify()">start</v-btn>
             <v-btn @click="SaveasObject()" class="ml-3">save</v-btn>
@@ -29,7 +40,7 @@
             </li>
           </ul> -->
           <v-card class="shopinglist">
-            <v-list v-if="features.length != 0">
+            <v-list v-if="Object.keys(features).length != 0">
               <v-list-item
                 v-for="f in Object.keys(features)"
                 :key="f"
@@ -42,7 +53,7 @@
                   ></v-list-item-title>
                 </v-list-item-content>
                 <v-list-item-action>
-                  <v-btn @click="classifier.clearLabel(f)" icon>
+                  <v-btn @click="ClearLabel(f)" icon>
                     <v-icon color="grey lighten-1">mdi-delete</v-icon>
                   </v-btn>
                 </v-list-item-action>
@@ -72,20 +83,20 @@ import P5dom from 'p5/lib/addons/p5.dom'
 import P5 from 'p5'
 import ml5 from 'ml5'
 import Confirm from '../components/Confirm'
-let featureExtractor, video, c
+let featureExtractor, video
 export default {
   name: 'App',
   components: {
     Confirm
   },
+  created () {
+    featureExtractor = ml5.featureExtractor('MobileNet', () => {
+      console.log('ml5 success')
+    })
+  },
   mounted () {
     const start = function (p5) {
-      console.log('mount')
-      c = ml5.KNNClassifier()
       p5.setup = _ => {
-        featureExtractor = ml5.featureExtractor('MobileNet', () => {
-          console.log('ml5 success')
-        })
         let constraints = {
           video: {
             mandatory: {
@@ -105,18 +116,27 @@ export default {
   },
   data: () => ({
     //
-    features: [],
+    features: {},
     feature_result: '',
     feature_chance: '',
+    money: '',
+    moneys: {},
     label: '',
     classifier: ml5.KNNClassifier(),
     save_data: ''
   }),
   methods: {
     AddExample (label) {
-      const features = featureExtractor.infer(video)
-      this.classifier.addExample(features, label)
-      this.features = this.classifier.getCountByLabel()
+      let t = 0
+      while (t < 5) {
+        let features = featureExtractor.infer(video)
+        this.classifier.addExample(features, label)
+        this.features = this.classifier.getCountByLabel()
+        ++t
+      }
+      if (label !== 'bg') {
+        this.moneys[label] = this.money
+      }
     },
     Classify () {
       // Get the total number of labels from knnClassifier
@@ -157,9 +177,23 @@ export default {
       console.table(this.save_data)
       this.save_data = { dataset, tensors }
       window.localStorage.setItem('save', JSON.stringify(this.save_data))
+      window.localStorage.setItem('moneys', JSON.stringify(this.moneys))
+      window.localStorage.setItem('features', JSON.stringify(this.features))
       alert('save successfully')
+    },
+    ClearLabel (name) {
+      this.classifier.clearLabel(name)
+      this.features = this.classifier.getCountByLabel()
+    },
+    Bg () {
+      this.AddExample('bg')
+      this.AddExample('bg')
     }
-
   }
 }
 </script>
+<style scoped>
+.line {
+  display: inline;
+}
+</style>

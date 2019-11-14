@@ -1,10 +1,14 @@
 <template>
   <v-app>
     <v-app-bar app>
-      <v-toolbar-title class="headline text-uppercase">
-        <span>Vuetify</span>
-        <span class="font-weight-light">MATERIAL DESIGN</span>
-      </v-toolbar-title>
+      <v-btn text href="/home">
+        <v-icon> mdi-cash-register</v-icon>
+        <span class="mr-2">收銀台</span>
+      </v-btn>
+      <v-btn text href="/about">
+        <v-icon>mdi-tools</v-icon>
+        <span class="mr-2">管理</span>
+      </v-btn>
       <v-spacer></v-spacer>
       <v-btn
         text
@@ -16,7 +20,7 @@
     </v-app-bar>
 
     <v-content>
-       <router-view></router-view>
+      <router-view></router-view>
     </v-content>
   </v-app>
 </template>

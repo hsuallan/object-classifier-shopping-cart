@@ -1,6 +1,6 @@
 <template>
   <div>
-   <!--
+    <!--
     <v-btn @click="test()">test</v-btn>
     <v-btn @click="test2(`麵包${goods.length + 1}`)">test2</v-btn>
     <v-btn @click="AddExample('bg')">Background</v-btn>
@@ -25,7 +25,8 @@
       </v-col>
       <v-col :cols="2"></v-col>
       <v-col>
-        <v-btn @click="LoadfromObject()" class="ml-3">load</v-btn>
+        <v-btn @click="LoadfromObject()" class="mr-4">load</v-btn>
+        <v-btn @click="Classify()">start</v-btn>
         <v-divider></v-divider>
         <CheckOutList
           :goods="goods"
@@ -66,13 +67,14 @@ export default {
     CheckOutList,
     Confirm
   },
+  created () {
+    featureExtractor = ml5.featureExtractor('MobileNet', () => {
+      console.log('ml5 finish')
+    })
+  },
   mounted () {
     const start = function (p5) {
-      console.log('mount')
       p5.setup = _ => {
-        featureExtractor = ml5.featureExtractor('MobileNet', () => {
-          console.log('ml5 success')
-        })
         let constraints = {
           video: {
             mandatory: {
@@ -97,6 +99,7 @@ export default {
     feature_chance: '',
     goods: [],
     label: '',
+    moneys: {},
     now: 0,
     alpha: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
   }),
@@ -106,7 +109,7 @@ export default {
     },
     test2 (m) {
       return new Promise(resolve => {
-        this.goods.push({ text: m, id: this.AutoIncremental(), price: Math.floor(Math.random() * 100) })
+        this.goods.push({ text: m, id: this.AutoIncremental(), price: parseInt(this.moneys[m]) })
         resolve()
       })
     },
@@ -165,8 +168,8 @@ export default {
     },
     LoadfromObject () {
       const data = JSON.parse(window.localStorage.getItem('save'))
-      classifier.load(data)
-        .then((msg) => { alert('success') })
+      this.moneys = JSON.parse(window.localStorage.getItem('moneys'))
+      classifier.load(data, () => { alert('successfully load') })
     }
   }
 }
