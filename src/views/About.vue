@@ -24,6 +24,7 @@
                 hint="money"
                 prepend-inner-icon="mdi-currency-usd"
                 v-model="money"
+                :rules="[rules.number]"
                 style="width:125px"
                 :counter="15"
               ></v-text-field>
@@ -48,7 +49,13 @@
               >
                 <v-list-item-content>
                   <v-list-item-title
-                    v-text="`${f} has ${features[f]} examples`"
+                    v-if="f === 'bg'"
+                    v-text="`${f} has ${features[f]} examples `"
+                    class=""
+                  ></v-list-item-title>
+                  <v-list-item-title
+                    v-else
+                    v-text="`${f} has ${features[f]} examples $${moneys[f]}`"
                     class=""
                   ></v-list-item-title>
                 </v-list-item-content>
@@ -61,7 +68,9 @@
               <div id="end" style=""></div>
             </v-list>
           </v-card>
-          <h2>Confidence of {{ feature_result }} is {{ feature_chance }} %</h2>
+          <h2 v-if="feature_result.length != 0">
+            Confidence of {{ feature_result }} is {{ feature_chance }} %
+          </h2>
         </div>
       </v-col>
     </v-row>
@@ -123,10 +132,16 @@ export default {
     moneys: {},
     label: '',
     classifier: ml5.KNNClassifier(),
-    save_data: ''
+    save_data: '',
+    rules: {
+      number (value) {
+        const reg = /^[^a-z]*$/
+        return reg.test(value) ? true : 'number only'
+      }
+    }
   }),
   methods: {
-    AddExample (label) {
+    async AddExample (label) {
       let t = 0
       while (t < 5) {
         let features = featureExtractor.infer(video)
@@ -185,8 +200,7 @@ export default {
       this.classifier.clearLabel(name)
       this.features = this.classifier.getCountByLabel()
     },
-    Bg () {
-      this.AddExample('bg')
+    async Bg () {
       this.AddExample('bg')
     }
   }

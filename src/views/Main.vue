@@ -1,13 +1,13 @@
 <template>
   <div class="container">
     <div class="left">
-      <v-btn text href="/home">
+      <v-btn text @click="$router.push('home')">
         <v-icon> mdi-cash-register</v-icon>
         <span class="mr-2">收銀台</span>
       </v-btn>
     </div>
     <div class="right">
-      <v-btn text href="/about">
+      <v-btn text @click="$router.push('about')">
         <v-icon>mdi-tools</v-icon>
         <span class="mr-2">管理</span>
       </v-btn>

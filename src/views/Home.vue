@@ -26,7 +26,7 @@
       <v-col :cols="2"></v-col>
       <v-col>
         <v-btn @click="LoadfromObject()" class="mr-4">load</v-btn>
-        <v-btn @click="Classify()">start</v-btn>
+        <v-btn @click="StartClassify()">start</v-btn>
         <v-divider></v-divider>
         <CheckOutList
           :goods="goods"
@@ -94,6 +94,7 @@ export default {
   },
   data: () => ({
     //
+    alpha: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
     features: [],
     feature_result: '',
     feature_chance: '',
@@ -101,7 +102,8 @@ export default {
     label: '',
     moneys: {},
     now: 0,
-    alpha: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    stop: false
+
   }),
   methods: {
     test () {
@@ -116,6 +118,7 @@ export default {
     clear () {
       this.goods.length = 0
       this.goods.pop()
+      this.stop = true
     },
     AutoIncremental () {
       this.now < 9 ? this.now += 1 : this.now = 0
@@ -126,12 +129,15 @@ export default {
         return x.id === id
       })
       this.goods.splice(pos, 1)
-      console.log(pos)
     },
     CheckOut () {
       let all = 0
+      this.stop = true
       this.goods.forEach(e => { all += e.price })
       this.$refs.confirm.open('Message', `price is ${all}`, { color: 'cyan' })
+        .then(() => {
+          this.clear()
+        })
     },
     AddExample (label) {
       const features = featureExtractor.infer(video)
@@ -157,19 +163,25 @@ export default {
         this.feature_result = ans.label
         this.feature_chance = confidences[ans.label] * 100
       }
-      if (ans.label == 'bg') {
-        console.log(ans.label)
-        window.setTimeout(() => { this.Classify() }, 500)
-      } else {
-        this.$refs.breadConfirmDialog.open(ans.label)
-          .then((m) => { this.test2(m) })
-          .then(() => { window.setTimeout(() => { this.Classify() }, 2000) })
+      if (!this.stop) {
+        if (ans.label === 'bg') {
+          console.log(ans.label)
+          window.setTimeout(() => { this.Classify() }, 500)
+        } else {
+          this.$refs.breadConfirmDialog.open(ans.label)
+            .then((m) => { this.test2(m) })
+            .then(() => { window.setTimeout(() => { this.Classify() }, 2000) })
+        }
       }
     },
     LoadfromObject () {
       const data = JSON.parse(window.localStorage.getItem('save'))
       this.moneys = JSON.parse(window.localStorage.getItem('moneys'))
       classifier.load(data, () => { alert('successfully load') })
+    },
+    StartClassify () {
+      this.stop = false
+      this.Classify()
     }
   }
 }
