@@ -1,23 +1,9 @@
 <template>
   <div>
-    <!--
-    <v-btn @click="test()">test</v-btn>
-    <v-btn @click="test2(`麵包${goods.length + 1}`)">test2</v-btn>
-    <v-btn @click="AddExample('bg')">Background</v-btn>
-    <v-text-field
-      hint="label"
-      v-model="label"
-      style="width:125px"
-      :counter="15"
-    ></v-text-field>
-    <v-btn @click="AddExample(label)">add</v-btn>
-    <v-btn @click="Classify()">start</v-btn>
-    <ul>
-      <li v-for="f in Object.keys(features)" :key="f.name">
-        {{ f }} has {{ features[f] }}
-      </li>
-    </ul>
-    <h2>Confidence of {{ feature_result }} is {{ feature_chance }} %</h2> -->
+    <section class="loading-box" :class="{ fade: loading }">
+      <div class="loading"></div>
+      <div class="text">loading....</div>
+    </section>
     <v-row>
       <v-col :cols="1"></v-col>
       <v-col :cols="6">
@@ -25,8 +11,7 @@
       </v-col>
       <v-col :cols="2"></v-col>
       <v-col>
-        <v-btn @click="LoadfromObject()" class="mr-4">load</v-btn>
-        <v-btn @click="StartClassify()">start</v-btn>
+        <v-btn @click="StartClassify()">開始/結束結帳</v-btn>
         <v-divider></v-divider>
         <CheckOutList
           :goods="goods"
@@ -49,6 +34,53 @@
   color: azure;
   font-size: 120px;
 }
+.loading-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  height: 100%;
+  background: #ccc;
+  transition: opacity 0.4s ease;
+  z-index: 15;
+}
+.loading-box.fade {
+  opacity: 0;
+  z-index: -15;
+}
+.loading-box .text {
+  padding-top: 16px;
+  width: 100%;
+  letter-spacing: 1px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.loading {
+  width: 100px;
+  height: 100px;
+  user-select: none;
+  border-radius: 50%;
+  box-shadow: #b8d721 0px 1px 1px, #6fbd23 0.5px 0.866px 1px,
+    #44a559 0.866px 0.5px 1px, #3d76b7 1px 0px 1px, #9f57ef 0.866px -0.5px 1px,
+    #fb69c8 0.5px -0.866px 1px, #ff90c7 0px -1px 1px,
+    #ffa481 -0.5px -0.866px 1px, #ff9c5b -0.866px -0.5px 1px,
+    #ffcc6c -1px 0px 1px, #f6cb26 -0.866px 0.5px 1px, #fff019 -0.5px 0.866px 1px;
+  filter: saturate(400%) contrast(0.9);
+  animation: loading 0.46s linear infinite;
+}
 </style>
 <script>
 // eslint-disable-next-line
@@ -69,10 +101,12 @@ export default {
   },
   created () {
     featureExtractor = ml5.featureExtractor('MobileNet', () => {
-      console.log('ml5 finish')
+      console.log('ml5 finish 1')
+      this.loading = true
+      // eslint-disable-next-line
+      new P5(start)
+      this.LoadfromObject()
     })
-  },
-  mounted () {
     const start = function (p5) {
       p5.setup = _ => {
         let constraints = {
@@ -89,11 +123,8 @@ export default {
         video.parent('video')
       }
     }
-    // eslint-disable-next-line
-    new P5(start)
   },
   data: () => ({
-    //
     alpha: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
     features: [],
     feature_result: '',
@@ -102,8 +133,9 @@ export default {
     label: '',
     moneys: {},
     now: 0,
-    stop: false
-
+    stop: true,
+    loading: false,
+    ans: ''
   }),
   methods: {
     test () {
@@ -133,10 +165,22 @@ export default {
     CheckOut () {
       let all = 0
       this.stop = true
-      this.goods.forEach(e => { all += e.price })
-      this.$refs.confirm.open('Message', `price is ${all}`, { color: 'cyan' })
+      let list = {}
+      let ans = '共買了\n'
+      this.goods.forEach(e => {
+        all += e.price
+        list[e.text] = list[e.text] === undefined ? 1 : list[e.text] += 1
+      })
+      Object.keys(list).forEach((x) => {
+        ans = ans.concat(`${x} ${list[x]}個`, '\n')
+      })
+      this.ans = ans
+      this.$refs.confirm.open('Message', ans, `共${all}元`)
         .then(() => {
           this.clear()
+        })
+        .catch(() => {
+
         })
     },
     AddExample (label) {
@@ -153,7 +197,7 @@ export default {
       }
       // Get the features of the input video
       const features = featureExtractor.infer(video)
-      classifier.classify(features, this.Result)
+      classifier.classify(features, 7, this.Result)
     },
     Result (err, ans) {
       if (err) throw err
@@ -170,17 +214,17 @@ export default {
         } else {
           this.$refs.breadConfirmDialog.open(ans.label)
             .then((m) => { this.test2(m) })
-            .then(() => { window.setTimeout(() => { this.Classify() }, 2000) })
+            .then(() => { window.setTimeout(() => { this.Classify() }, 1000) })
         }
       }
     },
     LoadfromObject () {
       const data = JSON.parse(window.localStorage.getItem('save'))
       this.moneys = JSON.parse(window.localStorage.getItem('moneys'))
-      classifier.load(data, () => { alert('successfully load') })
+      classifier.load(data, () => { console.log('successfully load') })
     },
     StartClassify () {
-      this.stop = false
+      this.stop = !this.stop
       this.Classify()
     }
   }

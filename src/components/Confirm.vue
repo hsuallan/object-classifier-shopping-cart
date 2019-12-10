@@ -14,9 +14,10 @@
       <v-card-text
         v-show="!!message"
         class="pa-4 title"
-        style="text-align:center;"
-        >{{ message }}</v-card-text
-      >
+        style="text-align:center;white-space:pre-wrap;"
+        ><div class="">{{ message[0] }}</div>
+        <em style="font-size:42px; line-height:1.5em">{{ message[1] }}</em>
+      </v-card-text>
       <v-card-actions class="pt-0">
         <v-spacer></v-spacer>
         <v-btn color="primary darken-1" text @click.native="agree">Yes</v-btn>
@@ -58,22 +59,21 @@
 export default {
   data: () => ({
     dialog: false,
-    resolve: null,
-    reject: null,
-    message: null,
-    title: null,
+    resolve: {},
+    reject: {},
+    message: 0,
+    title: 0,
     options: {
-      color: 'primary',
+      color: 'cyan',
       width: 290,
       zIndex: 200
     }
   }),
   methods: {
-    open (title, message, options) {
+    open (title, ...message) {
       this.dialog = true
       this.title = title
       this.message = message
-      this.options = Object.assign(this.options, options)
       return new Promise((resolve, reject) => {
         this.resolve = resolve
         this.reject = reject
@@ -84,7 +84,7 @@ export default {
       this.dialog = false
     },
     cancel () {
-      this.resolve(false)
+      this.reject(false)
       this.dialog = false
     }
   }

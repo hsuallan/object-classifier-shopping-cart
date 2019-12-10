@@ -1,7 +1,9 @@
 <template>
   <div>
-    <!-- <v-btn @click="test()">test</v-btn>
-    <v-btn @click="test2(`麵包${goods.length + 1}`)">test2</v-btn> -->
+    <section class="loading-box" :class="{ fade: loading }">
+      <div class="loading"></div>
+      <div class="text">loading....</div>
+    </section>
     <v-row>
       <v-col :cols="1"></v-col>
       <v-col :cols="6">
@@ -11,7 +13,7 @@
       <v-col>
         <div class="list">
           <v-card>
-            <v-btn @click="Bg()">Background</v-btn>
+            <v-btn @click="Bg()">加入背景</v-btn>
             <v-text-field
               hint="label"
               prepend-inner-icon="mdi-baguette"
@@ -29,17 +31,11 @@
                 :counter="15"
               ></v-text-field>
             </div>
-
-            <v-btn @click="AddExample(label)" class="mr-3">add</v-btn>
-            <v-btn @click="Classify()">start</v-btn>
-            <v-btn @click="SaveasObject()" class="ml-3">save</v-btn>
+            <v-btn @click="AddExample(label)" class="mr-3">加入樣本</v-btn>
+            <v-btn @click="Classify()">測試</v-btn>
+            <v-btn @click="SaveasObject()" class="ml-3">儲存訓練</v-btn>
             <v-divider></v-divider>
           </v-card>
-          <!-- <ul>
-            <li v-for="f in Object.keys(features)" :key="f.name">
-              {{ f }} has {{ features[f] }}
-            </li>
-          </ul> -->
           <v-card class="shopinglist">
             <v-list v-if="Object.keys(features).length != 0">
               <v-list-item
@@ -50,13 +46,11 @@
                 <v-list-item-content>
                   <v-list-item-title
                     v-if="f === 'bg'"
-                    v-text="`${f} has ${features[f]} examples `"
-                    class=""
+                    v-text="`背景有 ${features[f]} 個樣本 `"
                   ></v-list-item-title>
                   <v-list-item-title
                     v-else
-                    v-text="`${f} has ${features[f]} examples $${moneys[f]}`"
-                    class=""
+                    v-text="`${f}有${features[f]}樣本 $${moneys[f]}`"
                   ></v-list-item-title>
                 </v-list-item-content>
                 <v-list-item-action>
@@ -69,7 +63,9 @@
             </v-list>
           </v-card>
           <h2 v-if="feature_result.length != 0">
-            Confidence of {{ feature_result }} is {{ feature_chance }} %
+            樣本測試結果：{{
+              feature_result === "bg" ? "背景" : feature_result
+            }}
           </h2>
         </div>
       </v-col>
@@ -84,6 +80,59 @@
 .cameraicon {
   color: azure;
   font-size: 120px;
+}
+.loading-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  height: 100%;
+  background: #ccc;
+  transition: opacity 0.4s ease;
+  z-index: 15;
+}
+.loading-box.fade {
+  opacity: 0;
+  z-index: -15;
+}
+.loading-box .text {
+  padding-top: 16px;
+  width: 100%;
+  letter-spacing: 1px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.loading {
+  width: 100px;
+  height: 100px;
+  user-select: none;
+  border-radius: 50%;
+  box-shadow: #b8d721 0px 1px 1px, #6fbd23 0.5px 0.866px 1px,
+    #44a559 0.866px 0.5px 1px, #3d76b7 1px 0px 1px, #9f57ef 0.866px -0.5px 1px,
+    #fb69c8 0.5px -0.866px 1px, #ff90c7 0px -1px 1px,
+    #ffa481 -0.5px -0.866px 1px, #ff9c5b -0.866px -0.5px 1px,
+    #ffcc6c -1px 0px 1px, #f6cb26 -0.866px 0.5px 1px, #fff019 -0.5px 0.866px 1px;
+  filter: saturate(400%) contrast(0.9);
+  animation: loading 0.46s linear infinite;
+}
+.list {
+  padding-right: 1vw;
 }
 </style>
 <script>
@@ -100,10 +149,11 @@ export default {
   },
   created () {
     featureExtractor = ml5.featureExtractor('MobileNet', () => {
-      console.log('ml5 success')
+      console.log('ml5 finish 1')
+      this.loading = true
+      // eslint-disable-next-line
+      new P5(start)
     })
-  },
-  mounted () {
     const start = function (p5) {
       p5.setup = _ => {
         let constraints = {
@@ -120,11 +170,8 @@ export default {
         video.parent('video')
       }
     }
-    // eslint-disable-next-line
-    new P5(start)
   },
   data: () => ({
-    //
     features: {},
     feature_result: '',
     feature_chance: '',
@@ -133,6 +180,7 @@ export default {
     label: '',
     classifier: ml5.KNNClassifier(),
     save_data: '',
+    loading: false,
     rules: {
       number (value) {
         const reg = /^[^a-z]*$/
@@ -142,13 +190,11 @@ export default {
   }),
   methods: {
     async AddExample (label) {
-      let t = 0
-      while (t < 5) {
-        let features = featureExtractor.infer(video)
-        this.classifier.addExample(features, label)
-        this.features = this.classifier.getCountByLabel()
-        ++t
-      }
+      ;[1, 2, 3].forEach(async (i) => {
+        let features = await featureExtractor.infer(video)
+        await this.classifier.addExample(features, label)
+        this.features = await this.classifier.getCountByLabel()
+      })
       if (label !== 'bg') {
         this.moneys[label] = this.money
       }
@@ -162,7 +208,7 @@ export default {
       }
       // Get the features of the input video
       const features = featureExtractor.infer(video)
-      this.classifier.classify(features, this.Result)
+      this.classifier.classify(features, 7, this.Result)
     },
     Result (err, ans) {
       if (err) throw err

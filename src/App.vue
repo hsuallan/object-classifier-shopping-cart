@@ -1,11 +1,11 @@
 <template>
   <v-app>
     <v-app-bar app>
-      <v-btn text @click="$router.push('home')">
+      <v-btn text @click="$router.push('user')">
         <v-icon> mdi-cash-register</v-icon>
         <span class="mr-2">收銀台</span>
       </v-btn>
-      <v-btn text @click="$router.push('about')">
+      <v-btn text @click="$router.push('admin')">
         <v-icon>mdi-tools</v-icon>
         <span class="mr-2">管理</span>
       </v-btn>
