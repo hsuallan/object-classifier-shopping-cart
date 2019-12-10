@@ -144,12 +144,14 @@ export default {
     test2 (m) {
       return new Promise(resolve => {
         this.goods.push({ text: m, id: this.AutoIncremental(), price: parseInt(this.moneys[m]) })
+        this.$socket.send(`${m} ${this.moneys[m]}元`)
         resolve()
       })
     },
     clear () {
       this.goods.length = 0
       this.goods.pop()
+      this.$socket.send(`Welcome 😀`)
       this.stop = true
     },
     AutoIncremental () {
@@ -166,7 +168,7 @@ export default {
       let all = 0
       this.stop = true
       let list = {}
-      let ans = '共買了\n'
+      let ans = ''
       this.goods.forEach(e => {
         all += e.price
         list[e.text] = list[e.text] === undefined ? 1 : list[e.text] += 1
@@ -175,12 +177,14 @@ export default {
         ans = ans.concat(`${x} ${list[x]}個`, '\n')
       })
       this.ans = ans
+      this.$socket.send(`共${all}元`)
       this.$refs.confirm.open('Message', ans, `共${all}元`)
         .then(() => {
           this.clear()
+          this.$socket.send(`謝謝光臨`)
         })
         .catch(() => {
-
+          this.$socket.send(`謝謝光臨`)
         })
     },
     AddExample (label) {
@@ -197,7 +201,7 @@ export default {
       }
       // Get the features of the input video
       const features = featureExtractor.infer(video)
-      classifier.classify(features, 7, this.Result)
+      classifier.classify(features, 5, this.Result)
     },
     Result (err, ans) {
       if (err) throw err
@@ -225,6 +229,7 @@ export default {
     },
     StartClassify () {
       this.stop = !this.stop
+      this.$socket.send(`Welcome 😀`)
       this.Classify()
     }
   }
