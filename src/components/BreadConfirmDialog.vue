@@ -69,7 +69,7 @@ export default {
       window.setTimeout(() => {
         this.dialog = false
         this.resolve(message)
-      }, 1000)
+      }, 1500)
       return new Promise((resolve, reject) => {
         this.resolve = resolve
         this.reject = reject

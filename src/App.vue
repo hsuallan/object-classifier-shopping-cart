@@ -18,7 +18,6 @@
         <span class="mr-2">Latest Release</span>
       </v-btn>
     </v-app-bar>
-
     <v-content>
       <router-view></router-view>
     </v-content>

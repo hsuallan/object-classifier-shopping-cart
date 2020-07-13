@@ -135,13 +135,11 @@ export default {
     now: 0,
     stop: true,
     loading: false,
-    ans: ''
+    ans: '',
+    breadres: ''
   }),
   methods: {
-    test () {
-      this.$refs.breadConfirmDialog.open(`麵包${this.goods.length + 1}`).then((m) => { this.test2(m) })
-    },
-    test2 (m) {
+    AddtoCheckoutList (m) {
       return new Promise(resolve => {
         this.goods.push({ text: m, id: this.AutoIncremental(), price: parseInt(this.moneys[m]) })
         this.$socket.send(`${m} ${this.moneys[m]}元`)
@@ -159,10 +157,9 @@ export default {
       return new Date().valueOf().toString().slice(7) + this.alpha[this.now]
     },
     DeleteItem (id) {
-      let pos = this.goods.findIndex((x) => {
-        return x.id === id
+      this.goods = this.goods.filter(x => {
+        return x.id !== id
       })
-      this.goods.splice(pos, 1)
     },
     CheckOut () {
       let all = 0
@@ -201,7 +198,7 @@ export default {
       }
       // Get the features of the input video
       const features = featureExtractor.infer(video)
-      classifier.classify(features, 5, this.Result)
+      classifier.classify(features, 9, this.Result)
     },
     Result (err, ans) {
       if (err) throw err
@@ -214,11 +211,17 @@ export default {
       if (!this.stop) {
         if (ans.label === 'bg') {
           console.log(ans.label)
-          window.setTimeout(() => { this.Classify() }, 500)
+          window.setTimeout(() => { this.Classify() }, 800)
         } else {
-          this.$refs.breadConfirmDialog.open(ans.label)
-            .then((m) => { this.test2(m) })
-            .then(() => { window.setTimeout(() => { this.Classify() }, 1000) })
+          if (this.breadres === ans.label) {
+            this.breadres = ''
+            this.$refs.breadConfirmDialog.open(ans.label)
+              .then((m) => { this.AddtoCheckoutList(m) })
+              .then(() => { window.setTimeout(() => { this.Classify() }, 1100) })
+          } else {
+            this.breadres = ans.label
+            window.setTimeout(() => { this.Classify() }, 300)
+          }
         }
       }
     },

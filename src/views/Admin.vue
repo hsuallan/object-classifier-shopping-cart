@@ -16,7 +16,7 @@
             <v-btn @click="Bg()">加入背景</v-btn>
             <v-text-field
               hint="label"
-              prepend-inner-icon="mdi-baguette"
+              prepend-inner-icon="mdi-basket"
               v-model="label"
               style="width:125px"
               :counter="15"
